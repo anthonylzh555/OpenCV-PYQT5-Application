@@ -1,2 +1,3 @@
 # thresholdapp_test
- this a app with UI to play with threshold
+ Just making something with user interface
+ - open certain img
