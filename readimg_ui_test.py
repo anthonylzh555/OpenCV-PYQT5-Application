@@ -1,7 +1,6 @@
 import sys
 import cv2
 import numpy as np
-#from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QApplication, QDialog, QFileDialog, QGridLayout, QLabel, QPushButton
 
@@ -71,21 +70,24 @@ class mainUI(QDialog):
         Then Refresh
         """
         if len(self.img.shape) == 3 :
-            print("test")
             height, width, channel = self.img.shape
             bytesPerline = 3 * width
+
+            # Qimage read image
+            self.qImg = QImage(self.img.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
         
+            # show Qimage
+            self.label.setPixmap(QPixmap.fromImage(self.qImg))
+
         elif  len(self.img.shape) == 2 :
-            print("test2")
             height, width = self.img.shape
             bytesPerline = 1 * width
-
-
-        # Qimage read image
-        self.qImg = QImage(self.img.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+            
+            # Qimage read image
+            self.qImg = QImage(self.img.data, width, height, bytesPerline, QImage.Format_Grayscale8)
         
-        # show Qimage
-        self.label.setPixmap(QPixmap.fromImage(self.qImg))
+            # show Qimage
+            self.label.setPixmap(QPixmap.fromImage(self.qImg))
         
     def saveSlot(self):
         """
@@ -108,8 +110,8 @@ class mainUI(QDialog):
             return
         
         #Processing Image
-        self.img = cv2.blur(self.img, (5, 5))
-        #self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+        #self.img = cv2.blur(self.img, (5, 5))
+        self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
         self.refreshShow()
 
 if __name__ == '__main__':
