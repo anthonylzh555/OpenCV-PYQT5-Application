@@ -11,8 +11,7 @@ class mainUI(QDialog):
         """
         imitialize a numpy array to save  a photo
         """
-        self.img_regular = np.ndarray(())
-        self.img_processed = np.ndarray(())
+        self.img = np.ndarray(())
         super().__init__()
         self.initUI()
 
@@ -30,13 +29,11 @@ class mainUI(QDialog):
         self.btnQuit = QPushButton('Quit', self)
 
         # Define Label
-        self.label_regularImg = QLabel("Regular Picture")
-        self.label_processedImg = QLabel("Processed Picture")
+        self.label = QLabel()
 
         # Layout
         layout = QGridLayout(self)
-        layout.addWidget(self.label_regularImg, 0, 1, 1, 2)    # (y,x,yspan,xspan)
-        layout.addWidget(self.label_processedImg, 0, 3, 1, 2)    # (y,x,yspan,xspan)
+        layout.addWidget(self.label, 0, 1, 3, 4)    # (y,x,yspan,xspan)
         layout.addWidget(self.btnOpen, 4, 1, 1, 1)
         layout.addWidget(self.btnSave, 4, 2, 1, 1)
         layout.addWidget(self.btnProcess, 4, 3, 1, 1)
@@ -59,23 +56,38 @@ class mainUI(QDialog):
             return
         
         #Read File by OpenCV
-        self.img_regular = cv2.imread(fileName)
+        self.img = cv2.imread(fileName)
 
         # Return to the main UI
-        if self.img_regular.size == 1:
+        if self.img.size == 1:
             return
         
-        if len(self.img_processed.shape) ==  2:
-           return
-        
-        height, width, channel = self.img_regular.shape
-        bytesPerline = 3 * width
+        self.refreshShow()
 
-        # Qimage read image
-        self.qImg_regular = QImage(self.img_regular.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+    def refreshShow(self):
+        """
+        Transform OpenCV image into Qimage
+        Then Refresh
+        """
+        if len(self.img.shape) == 3 :
+            height, width, channel = self.img.shape
+            bytesPerline = 3 * width
+
+            # Qimage read image
+            self.qImg = QImage(self.img.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
         
-        # show Qimage
-        self.label_regularImg.setPixmap(QPixmap.fromImage(self.qImg_regular))
+            # show Qimage
+            self.label.setPixmap(QPixmap.fromImage(self.qImg))
+
+        elif  len(self.img.shape) == 2 :
+            height, width = self.img.shape
+            bytesPerline = 1 * width
+            
+            # Qimage read image
+            self.qImg = QImage(self.img.data, width, height, bytesPerline, QImage.Format_Grayscale8)
+        
+            # show Qimage
+            self.label.setPixmap(QPixmap.fromImage(self.qImg))
         
     def saveSlot(self):
         """
@@ -84,32 +96,24 @@ class mainUI(QDialog):
         fileName, tmp = QFileDialog.getSaveFileName(self, 'Save Image', 'Image', '*.png *.jpg *.bmp')
         if fileName is '':
             return
-        if self.img_processed.size == 1:
+        if self.img.size == 1:
             return
 
         # Calling OpenCV function to save photo
-        cv2.imwrite(fileName, self.img_processed)
+        cv2.imwrite(fileName, self.img)
 
     def processSlot(self):
         """
         Process Data Here
         """
-        if self.img_regular.size == 1:
+        if self.img.size == 1:
             return
         
         #Processing Image
         #self.img = cv2.blur(self.img, (5, 5))
-        self.img_processed = cv2.cvtColor(self.img_regular, cv2.COLOR_BGR2GRAY)
+        self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+        self.refreshShow()
 
-        height, width = self.img_processed.shape
-        bytesPerline = 1 * width
-            
-        # Qimage read image
-        self.qImg_processed = QImage(self.img_processed.data, width, height, bytesPerline, QImage.Format_Grayscale8)
-        
-        # show Qimage
-        self.label_processedImg.setPixmap(QPixmap.fromImage(self.qImg_processed))
- 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     mainwindow = mainUI()
