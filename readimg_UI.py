@@ -22,6 +22,7 @@ class mainUI(QDialog):
         """
         # Define Size
         self.resize(400, 300)
+        self.setWindowTitle('Load Image')
 
         # Define Buttum
         self.btnOpen = QPushButton('Open', self)
