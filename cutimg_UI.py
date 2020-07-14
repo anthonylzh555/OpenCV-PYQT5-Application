@@ -48,12 +48,14 @@ class mainUI(QWidget):
         self.initUI()
         
     def initUI(self):
-        self.resize(400, 300)
+        self.resize(800, 600)
         self.setWindowTitle('Cut Image')
         
+
         self.lb = CutImage(self)
         
-        img = cv2.imread('sample.jpg')
+        
+        img = cv2.imread('./img/test1.PNG')
         
         height, width, bytesPerComponent = img.shape
         bytesPerLine = 3 * width
@@ -62,12 +64,15 @@ class mainUI(QWidget):
         QImg = QImage(img.data, width, height, bytesPerLine, QImage.Format_RGB888)
         pixmap = QPixmap.fromImage(QImg)
         self.lb.setPixmap(pixmap)
-        
+#         self.lb.setScaledContents(True)
+
         self.lb.setCursor(Qt.CrossCursor)
-        
+
+
         self.show()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     mainwindow = mainUI()
+    mainwindow.show()
     sys.exit(app.exec_())
