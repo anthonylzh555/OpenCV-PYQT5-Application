@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from PyQt5.QtGui import QImage, QPixmap, QPainter, QPen, QGuiApplication
 from PyQt5.QtCore import QRect, Qt
-from PyQt5.QtWidgets import QApplication, QDialog, QFileDialog, QGridLayout, QLabel, QPushButton
+from PyQt5.QtWidgets import QApplication, QDialog, QFileDialog, QGridLayout, QLabel, QPushButton, QSlider
 
 def qtpixmap_to_cvimg(qtpixmap):
 
@@ -26,6 +26,7 @@ class mainUI(QDialog):
         self.img_regular = np.ndarray(())
         self.img_corp = np.ndarray(())
         self.img_processed = np.ndarray(())
+        self.img_threshold = np.ndarray(())
         super().__init__()
         self.initUI()
 
@@ -48,18 +49,30 @@ class mainUI(QDialog):
         # Define Label
         self.label_regularImg = CutImage(self)
         self.label_processedImg = QLabel("Processed Picture")
+        self.label_thresholdImg = QLabel("threshold Picture")
+        self.label_threshold = QLabel('threshold: 0 ',self)
         
+        # Define Slider
+        self.threshold_slider = QSlider(Qt.Horizontal,self)
+        self.threshold_slider.setMinimum(0)
+        self.threshold_slider.setMaximum(255)
+        self.threshold_slider.valueChanged[int].connect(self.changevalue)
 
         # Layout
         layout = QGridLayout(self)
         layout.addWidget(self.label_regularImg, 0, 1, 1, 3)    # (y,x,yspan,xspan)
-        layout.addWidget(self.label_processedImg, 0, 4, 1, 3)    # (y,x,yspan,xspan)
+        layout.addWidget(self.label_processedImg, 1, 1, 1, 3)    # (y,x,yspan,xspan)
+        layout.addWidget(self.label_thresholdImg, 0, 4, 1, 2)
+        layout.addWidget(self.label_threshold, 3, 6, 1, 1) 
+        
         layout.addWidget(self.btnOpen, 4, 1, 1, 1)
         layout.addWidget(self.btnSave, 4, 2, 1, 1)
         layout.addWidget(self.btnRect, 4, 3, 1, 1)
         layout.addWidget(self.btnCrop, 4, 4, 1, 1)
         layout.addWidget(self.btnProcess, 4, 5, 1, 1)
         layout.addWidget(self.btnQuit, 4, 6, 1, 1)
+        
+        layout.addWidget(self.threshold_slider, 3, 5,1,1)
 
         # Define the Buttum Function
         self.btnOpen.clicked.connect(self.openSlot)
@@ -149,9 +162,27 @@ class mainUI(QDialog):
         
         if processed_img is '':
             return
-
+        self.label_regularImg.setCursor(Qt.ArrowCursor)
         self.label_processedImg.setPixmap(processed_img)
         self.img_corp = qtpixmap_to_cvimg(processed_img)
+        
+    def changevalue(self,value):
+        sender = self.sender()
+        if sender == self.threshold_slider:
+            self.threshold_slider.setValue(value)
+        self.label_threshold.setText('threshold:'+str(value))
+        
+        # Threshold
+        ret , self.img_threshold = cv2.threshold(self.img_processed,value,255,cv2.THRESH_BINARY)  
+
+        height, width = self.img_threshold.shape
+        bytesPerline = 1 * width
+            
+        # Qimage read image
+        self.qImg_threshold = QImage(self.img_threshold.data, width, height, bytesPerline, QImage.Format_Grayscale8)
+        
+        # show Qimage
+        self.label_thresholdImg.setPixmap(QPixmap.fromImage(self.qImg_threshold))
 
 
         

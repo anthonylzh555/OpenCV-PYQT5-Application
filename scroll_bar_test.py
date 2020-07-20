@@ -135,8 +135,8 @@ class mainUI(QDialog):
             self.threshold_slider.setValue(value)
         self.label_threshold.setText('threshold:'+str(value))
         
-        #################
-        ret , self.img_threshold = cv2.threshold(self.img_processed,value,255,cv2.THRESH_BINARY)  ##
+        # Threshold
+        ret , self.img_threshold = cv2.threshold(self.img_processed,value,255,cv2.THRESH_BINARY)  
 
         height, width = self.img_threshold.shape
         bytesPerline = 1 * width
@@ -146,7 +146,6 @@ class mainUI(QDialog):
         
         # show Qimage
         self.label_thresholdImg.setPixmap(QPixmap.fromImage(self.qImg_threshold))
-        #################
  
 if __name__ == '__main__':
     app = QApplication(sys.argv)
