@@ -10,10 +10,11 @@ class mainUI(QDialog):
     
     def __init__(self):
         """
-        imitialize a numpy array to save  a photo
+        imitialize a numpy array to save a photo
         """
         self.img_regular = np.ndarray(())
         self.img_processed = np.ndarray(())
+        self.img_threshold = np.ndarray(())
         super().__init__()
         self.initUI()
 
@@ -48,7 +49,6 @@ class mainUI(QDialog):
         layout.addWidget(self.label_regularImg, 0, 1, 1, 2)    # (y,x,yspan,xspan)
         layout.addWidget(self.label_processedImg, 1, 1, 1, 2)    # (y,x,yspan,xspan)
         layout.addWidget(self.label_thresholdImg, 0, 3, 1, 2)
-        
         layout.addWidget(self.label_threshold, 3, 4, 1, 1) 
         
         layout.addWidget(self.btnOpen, 4, 1, 1, 1)
@@ -100,8 +100,10 @@ class mainUI(QDialog):
         Save Photo
         """
         fileName, tmp = QFileDialog.getSaveFileName(self, 'Save Image', 'Image', '*.png *.jpg *.bmp')
+        
         if fileName is '':
             return
+        
         if self.img_processed.size == 1:
             return
 
@@ -117,7 +119,6 @@ class mainUI(QDialog):
         
         #Processing Image
         self.img_processed = cv2.cvtColor(self.img_regular, cv2.COLOR_BGR2GRAY)
-#         ret , self.img_processed = cv2.threshold(self.img_processed,145,255,cv2.THRESH_BINARY)
 
         height, width = self.img_processed.shape
         bytesPerline = 1 * width
@@ -135,16 +136,16 @@ class mainUI(QDialog):
         self.label_threshold.setText('threshold:'+str(value))
         
         #################
-        ret , self.img_processed = cv2.threshold(self.img_processed,value,255,cv2.THRESH_BINARY)  ##
+        ret , self.img_threshold = cv2.threshold(self.img_processed,value,255,cv2.THRESH_BINARY)  ##
 
-        height, width = self.img_processed.shape
+        height, width = self.img_threshold.shape
         bytesPerline = 1 * width
             
         # Qimage read image
-        self.qImg_processed = QImage(self.img_processed.data, width, height, bytesPerline, QImage.Format_Grayscale8)
+        self.qImg_threshold = QImage(self.img_threshold.data, width, height, bytesPerline, QImage.Format_Grayscale8)
         
         # show Qimage
-        self.label_thresholdImg.setPixmap(QPixmap.fromImage(self.qImg_processed))
+        self.label_thresholdImg.setPixmap(QPixmap.fromImage(self.qImg_threshold))
         #################
  
 if __name__ == '__main__':
