@@ -17,6 +17,7 @@ def qtpixmap_to_cvimg(qtpixmap):
 
     return result
 
+
 class mainUI(QDialog):
     
     def __init__(self):
@@ -50,7 +51,8 @@ class mainUI(QDialog):
         self.label_regularImg = CutImage(self)
         self.label_processedImg = QLabel("Processed Picture")
         self.label_thresholdImg = QLabel("threshold Picture")
-        self.label_threshold = QLabel('threshold: 0 ',self)
+        self.label_threshold = QLabel("threshold: 0 ",self)
+        self.label_thresholdrate = QLabel("Rate : 0 ",self)
         
         # Define Slider
         self.threshold_slider = QSlider(Qt.Horizontal,self)
@@ -64,6 +66,7 @@ class mainUI(QDialog):
         layout.addWidget(self.label_processedImg, 1, 1, 1, 3)    # (y,x,yspan,xspan)
         layout.addWidget(self.label_thresholdImg, 0, 4, 1, 2)
         layout.addWidget(self.label_threshold, 3, 6, 1, 1) 
+        layout.addWidget(self.label_thresholdrate, 2, 6, 1, 1) 
         
         layout.addWidget(self.btnOpen, 4, 1, 1, 1)
         layout.addWidget(self.btnSave, 4, 2, 1, 1)
@@ -166,14 +169,14 @@ class mainUI(QDialog):
         self.label_processedImg.setPixmap(processed_img)
         self.img_corp = qtpixmap_to_cvimg(processed_img)
         
-    def changevalue(self,value):
+    def changevalue(self,threshold_value):
         sender = self.sender()
         if sender == self.threshold_slider:
-            self.threshold_slider.setValue(value)
-        self.label_threshold.setText('threshold:'+str(value))
+            self.threshold_slider.setValue(threshold_value)
+        self.label_threshold.setText('threshold:'+str(threshold_value))
         
         # Threshold
-        ret , self.img_threshold = cv2.threshold(self.img_processed,value,255,cv2.THRESH_BINARY)  
+        ret , self.img_threshold = cv2.threshold(self.img_processed,threshold_value,255,cv2.THRESH_BINARY)  
 
         height, width = self.img_threshold.shape
         bytesPerline = 1 * width
@@ -183,8 +186,44 @@ class mainUI(QDialog):
         
         # show Qimage
         self.label_thresholdImg.setPixmap(QPixmap.fromImage(self.qImg_threshold))
+        
+        rate = PixelRate(self.img_threshold,threshold_value)
+        self.label_thresholdrate.setText("Rate:"+str(rate.thresholdRate()))
+        
+
+        
+class PixelRate():
+    """Count the threshold rate"""
+    def __init__(self, img_path, threshhold):
+        self.img_path = img_path
+        self.threshhold = threshhold
+        
+#         regular_img = cv2.imread(self.img_path,0)
+        regular_img = self.img_path
+        ret , self.thresh_img = cv2.threshold(regular_img,self.threshhold,255,cv2.THRESH_BINARY)
+    
+    def thresholdPixel(self):
+        """Count the pixel which is above the threshold"""
+        area = 0
+        height, width = self.thresh_img.shape
+        for i in range(height):
+            for j in range(width):
+                if self.thresh_img[i, j] > 180:
+                    area += 1
+        return area
+
+    def totalPixel(self):
+        """Count the total pixel"""
+        height, width = self.thresh_img.shape
+        return height*width
 
 
+    def thresholdRate(self):
+        """Calculate the Rate of the threshold"""
+        Rate = (self.thresholdPixel()/self.totalPixel())*100
+        Rate = np.round(Rate,2)
+        return Rate
+        
         
 class CutImage(QLabel):
     x0 = 0
@@ -230,11 +269,9 @@ class CutImage(QLabel):
 #         pixmap2.save('cut.png')
 
 
-
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     mainwindow = mainUI()
-    
     mainwindow.show()
     sys.exit(app.exec_())
