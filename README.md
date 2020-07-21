@@ -4,3 +4,5 @@
  - BGR2GRAY
  - draw an rectangle and cut 
  - save picture
+ - set threshold with scroll bar
+ - calculate the rate of the threshold
