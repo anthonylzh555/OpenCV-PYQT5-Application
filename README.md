@@ -1,4 +1,4 @@
-# thresholdapp_test
+# OpenCV-Threshold-Application
  Just making something with user interface
  - open certain img
  - BGR2GRAY
