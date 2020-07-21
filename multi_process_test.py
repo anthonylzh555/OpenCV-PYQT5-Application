@@ -17,6 +17,7 @@ def qtpixmap_to_cvimg(qtpixmap):
 
     return result
 
+
 class mainUI(QDialog):
     
     def __init__(self):
@@ -184,7 +185,40 @@ class mainUI(QDialog):
         # show Qimage
         self.label_thresholdImg.setPixmap(QPixmap.fromImage(self.qImg_threshold))
 
+        
+class PixelRate():
+    """Count the threshold rate"""
+    
+    def __init__(self, img_path, threshhold):
+        self.img_path = img_path
+        self.threshhold = threshhold
+        
+        regular_img = cv2.imread(self.img_path,0)
+        ret , self.thresh_img = cv2.threshold(regular_img,self.threshhold,255,cv2.THRESH_BINARY)
+    
+    def thresholdPixel(self):
+        """Count the pixel which is above the threshold"""
+        area = 0
+        height, width = self.thresh_img.shape
+        for i in range(height):
+            for j in range(width):
+                if self.thresh_img[i, j] > 180:
+                    area += 1
+        return area
 
+    def totalPixel(self):
+        """Count the total pixel"""
+        
+        height, width = self.thresh_img.shape
+        return height*width
+
+
+    def thresholdRate(self):
+        """Calculate the Rate of the threshold"""
+        Rate = (self.thresholdPixel()/self.totalPixel())*100
+        Rate = np.round(Rate,2)
+        return Rate
+        
         
 class CutImage(QLabel):
     x0 = 0
@@ -228,7 +262,6 @@ class CutImage(QLabel):
     
 #         print("processed_img = ",type(processed_img))
 #         pixmap2.save('cut.png')
-
 
 
         

@@ -110,7 +110,8 @@ class mainUI(QDialog):
         
         # show Qimage
         self.label_processedImg.setPixmap(QPixmap.fromImage(self.qImg_processed))
- 
+        
+        
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     mainwindow = mainUI()
