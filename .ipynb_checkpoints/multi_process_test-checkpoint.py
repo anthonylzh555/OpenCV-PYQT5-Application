@@ -6,7 +6,7 @@ from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtWidgets import QApplication, QDialog, QFileDialog, QGridLayout, QLabel, QPushButton, QSlider
 
 def qtpixmap_to_cvimg(qtpixmap):
-
+    """ transform qtImage into numpy array ( regular image) """
     qimg = qtpixmap.toImage()
     temp_shape = (qimg.height(), qimg.bytesPerLine() * 8 // qimg.depth())
     temp_shape += (4,)
@@ -19,11 +19,10 @@ def qtpixmap_to_cvimg(qtpixmap):
 
 
 class mainUI(QDialog):
+    """ deployment of the user interface """
     
     def __init__(self):
-        """
-        imitialize a numpy array to save  a photo
-        """
+        """ initialize the parameter and numpy array to save photoes """
         self.img_regular = np.ndarray(())
         self.img_corp = np.ndarray(())
         self.img_processed = np.ndarray(())
@@ -32,9 +31,7 @@ class mainUI(QDialog):
         self.initUI()
 
     def initUI(self):
-        """
-        deifine the user interface
-        """
+        """ deifine the component of the user interface """
         # Define Size
         self.resize(400, 300)
         self.setWindowTitle('Load Image')
@@ -63,7 +60,7 @@ class mainUI(QDialog):
         # Layout
         layout = QGridLayout(self)
         layout.addWidget(self.label_regularImg, 0, 1, 1, 3)    # (y,x,yspan,xspan)
-        layout.addWidget(self.label_processedImg, 1, 1, 1, 3)    # (y,x,yspan,xspan)
+        layout.addWidget(self.label_processedImg, 1, 1, 1, 3)
         layout.addWidget(self.label_thresholdImg, 0, 4, 1, 2)
         layout.addWidget(self.label_threshold, 3, 6, 1, 1) 
         layout.addWidget(self.label_thresholdrate, 2, 6, 1, 1) 
@@ -86,9 +83,7 @@ class mainUI(QDialog):
         self.btnQuit.clicked.connect(self.close)
 
     def openSlot(self):
-        """
-        Load Image
-        """
+        """ Load Image  """
         fileName, tmp = QFileDialog.getOpenFileName(self, 'Open Image', 'Image', '*.png *.jpg *.bmp')
 
         # Return to the main UI
@@ -115,9 +110,7 @@ class mainUI(QDialog):
         self.label_regularImg.setPixmap(QPixmap.fromImage(self.qImg_regular))
         
     def saveSlot(self):
-        """
-        Save Photo
-        """
+        """ Save Photo """
         fileName, tmp = QFileDialog.getSaveFileName(self, 'Save Image', 'Image', '*.png *.jpg *.bmp')
         if fileName is '':
             return
@@ -128,9 +121,7 @@ class mainUI(QDialog):
         cv2.imwrite(fileName, self.img_processed)
         
     def processSlot(self):
-        """
-        Process Data Here
-        """
+        """ Process Data Here (BGR2GRAY) """
         print("self.img_processed = ",self.img_corp)
         if self.img_corp is '':
             return
@@ -155,14 +146,12 @@ class mainUI(QDialog):
         self.label_processedImg.setPixmap(QPixmap.fromImage(self.qImg_processed))
         
     def rectSlot(self):
-        """
-        Draw Rectangle on image
-        """
+        """ Draw Rectangle on image """
         self.label_regularImg.setCursor(Qt.CrossCursor)
 
 
     def cropSlot(self):
-        
+        """ Corp the Image"""
         if processed_img is '':
             return
         self.label_regularImg.setCursor(Qt.ArrowCursor)
@@ -170,6 +159,7 @@ class mainUI(QDialog):
         self.img_corp = qtpixmap_to_cvimg(processed_img)
         
     def changevalue(self,threshold_value):
+        """ let the label change with the scroll bar """
         sender = self.sender()
         if sender == self.threshold_slider:
             self.threshold_slider.setValue(threshold_value)
@@ -187,6 +177,7 @@ class mainUI(QDialog):
         # show Qimage
         self.label_thresholdImg.setPixmap(QPixmap.fromImage(self.qImg_threshold))
         
+        # Calculate the threshold value
         rate = PixelRate(self.img_threshold,threshold_value)
         self.label_thresholdrate.setText("Rate:"+str(rate.thresholdRate()))
         
@@ -194,6 +185,7 @@ class mainUI(QDialog):
         
 class PixelRate():
     """Count the threshold rate"""
+    
     def __init__(self, img_path, threshhold):
         self.img_path = img_path
         self.threshhold = threshhold
@@ -226,6 +218,7 @@ class PixelRate():
         
         
 class CutImage(QLabel):
+    """ define a class of Label to draw rectangle """
     x0 = 0
     y0 = 0
     x1 = 0
@@ -269,7 +262,6 @@ class CutImage(QLabel):
 #         pixmap2.save('cut.png')
 
 
-        
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     mainwindow = mainUI()
