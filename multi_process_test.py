@@ -49,7 +49,7 @@ class mainUI(QDialog):
         self.label_processedImg = QLabel("Processed Picture")
         self.label_thresholdImg = QLabel("threshold Picture")
         self.label_threshold = QLabel("threshold: 0 ",self)
-        self.label_thresholdrate = QLabel("Rate : 0 ",self)
+        self.label_thresholdrate = QLabel("佔比率 : 0 ",self)
         
         # Define Slider
         self.threshold_slider = QSlider(Qt.Horizontal,self)
@@ -90,8 +90,13 @@ class mainUI(QDialog):
         if fileName is "":
             return
         
-        #Read File by OpenCV
+        #Read File by OpenCV and resize
         self.img_regular = cv2.imread(fileName)
+        scale_percent = 40       # percent of original size
+        width = int(self.img_regular.shape[1] * scale_percent / 100)
+        height = int(self.img_regular.shape[0] * scale_percent / 100)
+        dim = (width, height)
+        self.img_regular = cv2.resize(self.img_regular,dim)
 
         # Return to the main UI
         if self.img_regular.size == 1:
@@ -100,7 +105,7 @@ class mainUI(QDialog):
         if len(self.img_regular.shape) ==  2:
             return
         
-        height, width, channel = self.img_regular.shape
+#         height, width, channel = self.img_regular.shape
         bytesPerline = 3 * width
 
         # Qimage read image
@@ -134,7 +139,6 @@ class mainUI(QDialog):
         #self.img = cv2.blur(self.img, (5, 5))
         self.img_processed = cv2.cvtColor(self.img_corp, cv2.COLOR_BGR2GRAY)
         
-        ##add another parametwr !#####################
 
         height, width = self.img_processed.shape
         bytesPerline = 1 * width
@@ -179,7 +183,7 @@ class mainUI(QDialog):
         
         # Calculate the threshold value
         rate = PixelRate(self.img_threshold,threshold_value)
-        self.label_thresholdrate.setText("Rate:"+str(rate.thresholdRate()))
+        self.label_thresholdrate.setText("佔比率 :"+str(rate.thresholdRate()))
         
 
         

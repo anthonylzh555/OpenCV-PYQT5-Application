@@ -14,9 +14,11 @@ class CameraPageWindow(QWidget,Ui_CameraPage):
     def __init__(self,parent=None):
         
         super(CameraPageWindow, self).__init__(parent)
-        self.timer_camera = QTimer() #初始化定时器
-        self.cap = cv2.VideoCapture() #初始化摄像头
-        self.CAM_NUM = 0
+        
+        self.timer_camera = QTimer() 
+        self.cap = cv2.VideoCapture() 
+        self.CAM_NUM = 0 
+        
         self.setupUi(self)
         self.initUI()
         self.slot_init()
@@ -28,7 +30,6 @@ class CameraPageWindow(QWidget,Ui_CameraPage):
     def slot_init(self):
         
         self.timer_camera.timeout.connect(self.show_camera)
-        #信号和槽连接
         self.cameraButton.clicked.connect(self.slotCameraButton)
 
     def show_camera(self):
@@ -39,17 +40,14 @@ class CameraPageWindow(QWidget,Ui_CameraPage):
         showImage = QImage(show.data, show.shape[1],show.shape[0],QImage.Format_RGB888)
         self.cameraLabel.setPixmap(QPixmap.fromImage(showImage))
     
-    #打开关闭摄像头控制
+
     def slotCameraButton(self):
         
         if self.timer_camera.isActive() == False:
-            #打开摄像头并显示图像信息
             self.openCamera()
         else:
-            #关闭摄像头并清空显示信息
             self.closeCamera()
 
-    #打开摄像头
     def openCamera(self):
         
         flag = self.cap.open(self.CAM_NUM)
@@ -63,7 +61,6 @@ class CameraPageWindow(QWidget,Ui_CameraPage):
             self.timer_camera.start(30)
             self.cameraButton.setText('關閉攝影機')
 
-    #关闭摄像头
     def closeCamera(self):
         
         self.timer_camera.stop()

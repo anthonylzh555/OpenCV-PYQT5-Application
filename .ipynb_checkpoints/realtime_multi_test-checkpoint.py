@@ -2,7 +2,7 @@ import sys
 import cv2
 import numpy as np
 from PyQt5.QtGui import QImage, QPixmap, QPainter, QPen, QGuiApplication
-from PyQt5.QtCore import QRect, Qt
+from PyQt5.QtCore import QRect, Qt, QTimer, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QDialog, QFileDialog, QGridLayout, QLabel, QPushButton, QSlider
 
 def qtpixmap_to_cvimg(qtpixmap):
@@ -21,14 +21,22 @@ def qtpixmap_to_cvimg(qtpixmap):
 class mainUI(QDialog):
     """ deployment of the user interface """
     
+    returnSignal = pyqtSignal()
+    
     def __init__(self):
         """ initialize the parameter and numpy array to save photoes """
         self.img_regular = np.ndarray(())
         self.img_corp = np.ndarray(())
         self.img_processed = np.ndarray(())
         self.img_threshold = np.ndarray(())
+        
+        self.timer_camera = QTimer() 
+        self.cap = cv2.VideoCapture() 
+        self.CAM_NUM = 0 
+        
         super().__init__()
         self.initUI()
+        self.slot_init()
 
     def initUI(self):
         """ deifine the component of the user interface """
@@ -75,45 +83,54 @@ class mainUI(QDialog):
         layout.addWidget(self.threshold_slider, 3, 5,1,1)
 
         # Define the Buttum Function
-        self.btnOpen.clicked.connect(self.openSlot)
+#         self.btnOpen.clicked.connect(self.openCamera)
         self.btnSave.clicked.connect(self.saveSlot)
         self.btnRect.clicked.connect(self.rectSlot)
         self.btnCrop.clicked.connect(self.cropSlot) 
         self.btnProcess.clicked.connect(self.processSlot)
         self.btnQuit.clicked.connect(self.close)
 
-    def openSlot(self):
-        """ Load Image  """
-        fileName, tmp = QFileDialog.getOpenFileName(self, 'Open Image', 'Image', '*.png *.jpg *.bmp')
+    def slot_init(self):
+        
+        self.timer_camera.timeout.connect(self.show_camera)
+        self.btnOpen.clicked.connect(self.slotCameraButton)
+        
+    def show_camera(self):
+        
+        flag,self.image = self.cap.read()
+        show = cv2.resize(self.image,(720,540))
+        show = cv2.cvtColor(show, cv2.COLOR_BGR2RGB)
+        showImage = QImage(show.data, show.shape[1],show.shape[0],QImage.Format_RGB888)
+        self.label_regularImg.setPixmap(QPixmap.fromImage(showImage))
+        
+    def slotCameraButton(self):
+        
+        if self.timer_camera.isActive() == False:
+            self.openCamera()
+        else:
+            self.closeCamera()
 
-        # Return to the main UI
-        if fileName is "":
-            return
+    def openCamera(self):
         
-        #Read File by OpenCV and resize
-        self.img_regular = cv2.imread(fileName)
-        scale_percent = 40       # percent of original size
-        width = int(self.img_regular.shape[1] * scale_percent / 100)
-        height = int(self.img_regular.shape[0] * scale_percent / 100)
-        dim = (width, height)
-        self.img_regular = cv2.resize(self.img_regular,dim)
+        flag = self.cap.open(self.CAM_NUM)
+        
+        if flag == False:
+            msg = QMessageBox.Warning(self, u'Warning', u'Please Check Your Connection!!',
+            buttons = QMessageBox.Ok,
+            defaultButton = QMessageBox.Ok)
+            
+        else:
+            self.timer_camera.start(30)
+            self.btnOpen.setText('Cam Off')
 
-        # Return to the main UI
-        if self.img_regular.size == 1:
-            return
+    def closeCamera(self):
         
-        if len(self.img_regular.shape) ==  2:
-            return
+        self.timer_camera.stop()
+        self.cap.release()
+        self.label_regularImg.clear()
+        self.btnOpen.setText('Cam On')
         
-#         height, width, channel = self.img_regular.shape
-        bytesPerline = 3 * width
 
-        # Qimage read image
-        self.qImg_regular = QImage(self.img_regular.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
-        
-        # show Qimage
-        self.label_regularImg.setPixmap(QPixmap.fromImage(self.qImg_regular))
-        
     def saveSlot(self):
         """ Save Photo """
         fileName, tmp = QFileDialog.getSaveFileName(self, 'Save Image', 'Image', '*.png *.jpg *.bmp')
@@ -139,8 +156,6 @@ class mainUI(QDialog):
         #self.img = cv2.blur(self.img, (5, 5))
         self.img_processed = cv2.cvtColor(self.img_corp, cv2.COLOR_BGR2GRAY)
         
-        ##add another parametwr !#####################
-
         height, width = self.img_processed.shape
         bytesPerline = 1 * width
             
