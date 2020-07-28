@@ -7,8 +7,9 @@
  - set threshold with scroll bar
  - calculate the rate of the threshold
  
-***
+******
  Requirement 
  - pyqt5 == 5.13.0
  - opencv-python == 3.4.1
  - numpy == 1.17.2
+******
