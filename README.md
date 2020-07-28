@@ -7,6 +7,9 @@
  - set threshold with scroll bar
  - calculate the rate of the threshold
  
+ - open the camera with a buttom
+ - apply real time video to do the threshild thing
+ 
 ******
  Requirement 
  - pyqt5 == 5.13.0

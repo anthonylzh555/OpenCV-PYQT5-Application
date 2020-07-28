@@ -15,7 +15,7 @@ class Ui_CameraPage(object):
         self.layoutWidget.setObjectName("layoutWidget")
         
         self.gridLayout = QtWidgets.QGridLayout(self.layoutWidget)
-        self.gridLayout.setContentsMargins(4, 4, 4, 4)
+        self.gridLayout.setContentsMargins(3, 3, 3, 3)
         self.gridLayout.setObjectName("gridLayout")
         
         self.cameraButton = QtWidgets.QPushButton(self.layoutWidget)
@@ -38,8 +38,8 @@ class Ui_CameraPage(object):
 
     def retranslateUi(self, CameraPage):
         _translate = QtCore.QCoreApplication.translate
-        CameraPage.setWindowTitle(_translate("CameraPage", "攝影機介面"))
-        self.cameraButton.setText(_translate("CameraPage", "打開攝影機"))
-        self.cameraLabel.setText(_translate("CameraPage", "攝影機畫面"))
+        CameraPage.setWindowTitle(_translate("CameraPage", "Camera Interface"))
+        self.cameraButton.setText(_translate("CameraPage", "Camera On"))
+        self.cameraLabel.setText(_translate("CameraPage", "Camera "))
         
         

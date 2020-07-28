@@ -53,20 +53,20 @@ class CameraPageWindow(QWidget,Ui_CameraPage):
         flag = self.cap.open(self.CAM_NUM)
         
         if flag == False:
-            msg = QMessageBox.Warning(self, u'Warning', u'請檢察相機是連接',
+            msg = QMessageBox.Warning(self, u'Warning', u'Please Check the Connection of the Camera',
             buttons=QMessageBox.Ok,
             defaultButton=QMessageBox.Ok)
             
         else:
             self.timer_camera.start(30)
-            self.cameraButton.setText('關閉攝影機')
+            self.cameraButton.setText('Camera off')
 
     def closeCamera(self):
         
         self.timer_camera.stop()
         self.cap.release()
         self.cameraLabel.clear()
-        self.cameraButton.setText('打開攝影機')
+        self.cameraButton.setText('Camera On')
 
         
 if __name__ == "__main__":

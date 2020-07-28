@@ -39,7 +39,7 @@ class CutImage(QLabel):
         
         pqscreen  = QGuiApplication.primaryScreen()
         pixmap2 = pqscreen.grabWindow(self.winId(), min(self.x0, self.x1), min(self.y0, self.y1), abs(self.x1-self.x0), abs(self.y1-self.y0))
-        pixmap2.save('cut.png')
+        pixmap2.save('./img/cut.png')
 
 class mainUI(QWidget):
     
