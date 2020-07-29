@@ -31,13 +31,17 @@ class mainUI(QDialog):
         self.img_processed = np.ndarray(())
         self.img_threshold = np.ndarray(())
         
+        self.threshold_value = 0
 
         self.camera = cv2.VideoCapture()
-        self.CAM_NUM = 2
+        self.CAM_NUM = 0  # Set Camera num
         
         self.camera_timer = QtCore.QTimer()
         self.camera_timer.timeout.connect(self.queryFrame)
-
+        self.corp_timer = QtCore.QTimer()
+        self.corp_timer.timeout.connect(self.cropImg)
+        self.corp_timer.timeout.connect(self.thres_img)
+        
 
     def initUI(self):
         """ deifine the component of the user interface """
@@ -50,8 +54,8 @@ class mainUI(QDialog):
         self.btnOpen = QPushButton('Open', self)
         self.btnSave = QPushButton('Save', self)
         self.btnRect = QPushButton('Rect', self)
-        self.btnCrop = QPushButton('Crop', self)
-        self.btnProcess = QPushButton('Process', self)
+        self.btnCrop = QPushButton('Corp', self)
+        self.btnProcess = QPushButton('XX', self)
         self.btnQuit = QPushButton('Quit', self)
 
         # Define Label
@@ -89,7 +93,7 @@ class mainUI(QDialog):
         self.btnSave.clicked.connect(self.saveSlot)
         self.btnRect.clicked.connect(self.rectSlot)
         self.btnCrop.clicked.connect(self.cropSlot) 
-        self.btnProcess.clicked.connect(self.processSlot)
+#         self.btnProcess.clicked.connect(self.processSlot)
         self.btnQuit.clicked.connect(self.close)
 
         
@@ -139,20 +143,23 @@ class mainUI(QDialog):
         # Calling OpenCV function to save photo
         cv2.imwrite(fileName, self.img_processed)
         
-    def processSlot(self):
-        """ Process Data Here (BGR2GRAY) """
-#         print("self.img_processed = ",self.img_corp)
-        if self.img_corp is '':
-            return
+    def rectSlot(self):
+        """ Draw Rectangle on image """
+        self.label_regularImg.setCursor(Qt.CrossCursor)
+
+
+    def cropSlot(self):
         
-#         print("type(self.img_processed) = ",self.img_corp.size)
-        if self.img_corp.size == 1:
-            return
+        self.corp_timer.start(30)
+        self.label_regularImg.setCursor(Qt.ArrowCursor)
+
         
-        #Processing Image
-        #self.img = cv2.blur(self.img, (5, 5))
+    def cropImg(self):
+        """ Corp the Image"""
+        
+        self.label_regularImg.setCursor(Qt.ArrowCursor)
+        self.img_corp = qtpixmap_to_cvimg(processed_img)
         self.img_processed = cv2.cvtColor(self.img_corp, cv2.COLOR_BGR2GRAY)
-        
         height, width = self.img_processed.shape
         bytesPerline = 1 * width
             
@@ -162,28 +169,22 @@ class mainUI(QDialog):
         # show Qimage
         self.label_processedImg.setPixmap(QPixmap.fromImage(self.qImg_processed))
         
-    def rectSlot(self):
-        """ Draw Rectangle on image """
-        self.label_regularImg.setCursor(Qt.CrossCursor)
-
-
-    def cropSlot(self):
-        """ Corp the Image"""
-        if processed_img is '':
-            return
-        self.label_regularImg.setCursor(Qt.ArrowCursor)
-        self.label_processedImg.setPixmap(processed_img)
-        self.img_corp = qtpixmap_to_cvimg(processed_img)
         
-    def changevalue(self,threshold_value):
+        
+        
+    def changevalue(self,threshold):
         """ let the label change with the scroll bar """
         sender = self.sender()
         if sender == self.threshold_slider:
-            self.threshold_slider.setValue(threshold_value)
-        self.label_threshold.setText('threshold:'+str(threshold_value))
+            self.threshold_slider.setValue(threshold)
+        self.label_threshold.setText('threshold:'+str(threshold))
+        self.threshold_value = threshold
+        print (self.threshold_value)
         
-        # Threshold
-        ret , self.img_threshold = cv2.threshold(self.img_processed,threshold_value,255,cv2.THRESH_BINARY)  
+        
+    def thres_img(self):
+        """Threshold"""
+        ret , self.img_threshold = cv2.threshold(self.img_processed,self.threshold_value,255,cv2.THRESH_BINARY)  
 
         height, width = self.img_threshold.shape
         bytesPerline = 1 * width
@@ -195,7 +196,7 @@ class mainUI(QDialog):
         self.label_thresholdImg.setPixmap(QPixmap.fromImage(self.qImg_threshold))
         
         # Calculate the threshold value
-        rate = PixelRate(self.img_threshold,threshold_value)
+        rate = PixelRate(self.img_threshold,self.threshold_value)
         self.label_thresholdrate.setText("佔比率 :"+str(rate.thresholdRate()))
         
 
