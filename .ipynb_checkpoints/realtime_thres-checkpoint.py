@@ -55,7 +55,7 @@ class mainUI(QDialog):
         self.btnSave = QPushButton('Save', self)
         self.btnRect = QPushButton('Rect', self)
         self.btnCrop = QPushButton('Corp', self)
-        self.btnProcess = QPushButton('XX', self)
+
         self.btnQuit = QPushButton('Quit', self)
 
         # Define Label
@@ -76,24 +76,22 @@ class mainUI(QDialog):
         layout.addWidget(self.label_regularImg, 0, 1, 1, 3)    # (y,x,yspan,xspan)
         layout.addWidget(self.label_processedImg, 1, 1, 1, 3)
         layout.addWidget(self.label_thresholdImg, 0, 4, 1, 2)
-        layout.addWidget(self.label_threshold, 3, 6, 1, 1) 
-        layout.addWidget(self.label_thresholdrate, 2, 6, 1, 1) 
+        layout.addWidget(self.label_threshold, 3, 5, 1, 1) 
+        layout.addWidget(self.label_thresholdrate, 2, 5, 1, 1) 
         
         layout.addWidget(self.btnOpen, 4, 1, 1, 1)
         layout.addWidget(self.btnSave, 4, 2, 1, 1)
         layout.addWidget(self.btnRect, 4, 3, 1, 1)
         layout.addWidget(self.btnCrop, 4, 4, 1, 1)
-        layout.addWidget(self.btnProcess, 4, 5, 1, 1)
-        layout.addWidget(self.btnQuit, 4, 6, 1, 1)
+        layout.addWidget(self.btnQuit, 4, 5, 1, 1)
         
-        layout.addWidget(self.threshold_slider, 3, 5,1,1)
+        layout.addWidget(self.threshold_slider, 3, 4,1,1)
 
         # Define the Buttum Function
         self.btnOpen.clicked.connect(self.cameraSlot)
         self.btnSave.clicked.connect(self.saveSlot)
         self.btnRect.clicked.connect(self.rectSlot)
         self.btnCrop.clicked.connect(self.cropSlot) 
-#         self.btnProcess.clicked.connect(self.processSlot)
         self.btnQuit.clicked.connect(self.close)
 
         
