@@ -4,7 +4,7 @@ import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QImage, QPixmap, QPainter, QPen, QGuiApplication
 from PyQt5.QtCore import QRect, Qt, QTimer, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QApplication, QDialog, QFileDialog, QGridLayout, QLabel, QPushButton, QSlider
+from PyQt5.QtWidgets import QApplication, QDialog, QFileDialog, QGridLayout, QLabel, QPushButton, QSlider, QMessageBox
 
 def qtpixmap_to_cvimg(qtpixmap):
     """ transform qtImage into numpy array ( regular image) """
@@ -15,7 +15,6 @@ def qtpixmap_to_cvimg(qtpixmap):
     ptr.setsize(qimg.byteCount())
     result = np.array(ptr, dtype=np.uint8).reshape(temp_shape)
     result = result[..., :3]
-
     return result
 
 
@@ -34,7 +33,7 @@ class mainUI(QDialog):
         
 
         self.camera = cv2.VideoCapture()
-        self.CAM_NUM = 0 
+        self.CAM_NUM = 2
         
         self.camera_timer = QtCore.QTimer()
         self.camera_timer.timeout.connect(self.queryFrame)
@@ -106,9 +105,9 @@ class mainUI(QDialog):
         flag = self.camera.open(self.CAM_NUM)
         
         if flag == False:
-            msg = QMessageBox.Warning(self, u'Warning', u'Please Check Your Connection',
-            buttons = QMessageBox.Ok,
-            defaultButton = QMessageBox.Ok)
+            msg = QMessageBox.warning(self, u'Warning', u'Please Check Your Camera Connection',
+                                        buttons = QMessageBox.Ok,
+                                        defaultButton = QMessageBox.Ok)
         else:
             self.camera_timer.start(100)
             self.btnOpen.setText('Cam Off')
@@ -121,7 +120,7 @@ class mainUI(QDialog):
         self.btnOpen.setText('Cam On')
         
     def queryFrame(self):
-        """ Refresh image """
+        """When Qtimer time out, refresh regular_img """
         ret, self.frame = self.camera.read()
         show = cv2.resize(self.frame,(480,360))
         show = cv2.cvtColor(show, cv2.COLOR_BGR2RGB)
@@ -276,8 +275,6 @@ class CutImage(QLabel):
         global processed_img
         processed_img = pixmap2
     
-#         print("processed_img = ",type(processed_img))
-#         pixmap2.save('cut.png')
 
 
 if __name__ == '__main__':
