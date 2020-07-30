@@ -38,9 +38,11 @@ class mainUI(QDialog):
         
         self.camera_timer = QtCore.QTimer()
         self.camera_timer.timeout.connect(self.queryFrame)
-        self.corp_timer = QtCore.QTimer()
-        self.corp_timer.timeout.connect(self.cropImg)
-        self.corp_timer.timeout.connect(self.thres_img)
+#         self.corp_timer = QtCore.QTimer()
+#         self.corp_timer.timeout.connect(self.cropImg)
+#         self.corp_timer.timeout.connect(self.thres_img)
+        self.camera_timer.timeout.connect(self.cropImg)
+        self.camera_timer.timeout.connect(self.thres_img)
         
 
     def initUI(self):
@@ -111,7 +113,7 @@ class mainUI(QDialog):
                                         buttons = QMessageBox.Ok,
                                         defaultButton = QMessageBox.Ok)
         else:
-            self.camera_timer.start(100)
+            self.camera_timer.start(50)
             self.btnOpen.setText('Cam Off')
         
     def closeCamera(self):
@@ -148,7 +150,7 @@ class mainUI(QDialog):
 
     def cropSlot(self):
         
-        self.corp_timer.start(30)
+        self.corp_timer.start(50)
         self.label_regularImg.setCursor(Qt.ArrowCursor)
 
         
@@ -240,8 +242,7 @@ class CutImage(QLabel):
     x1 = 0
     y1 = 0
     flag = False
-#     global processed_img
-    
+
     def mousePressEvent(self,event):
         self.flag = True
         self.x0 = event.x()
