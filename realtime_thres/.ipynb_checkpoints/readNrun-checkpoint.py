@@ -1,7 +1,7 @@
 import sys
 import cv2
 import numpy as np
-import os
+import os 
 from configparser import ConfigParser
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QImage, QPixmap, QPainter, QPen, QGuiApplication
@@ -68,7 +68,7 @@ class mainUI(QDialog):
                                         buttons = QMessageBox.Ok,
                                         defaultButton = QMessageBox.Ok)
         else:
-            self.camera_timer.start(100)
+            self.camera_timer.start(50)
             self.label_threshold.setText('threshold:'+str(threshold_rate))
         
         

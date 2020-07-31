@@ -130,7 +130,7 @@ class mainUI(QDialog):
                                         buttons = QMessageBox.Ok,
                                         defaultButton = QMessageBox.Ok)
         else:
-            self.camera_timer.start(100)
+            self.camera_timer.start(50)
             self.btnOpen.setText('Cam Off')
         
     def closeCamera(self):
@@ -240,11 +240,6 @@ class mainUI(QDialog):
             msg = QMessageBox.warning(self, u'Warning', u'File does not exist',
                                         buttons = QMessageBox.Ok)
             
-#     def loadAndRect(self):
-        
-        
-
-        
 class PixelRate():
     """Count the threshold rate"""
     
