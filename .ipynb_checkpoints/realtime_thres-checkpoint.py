@@ -38,18 +38,15 @@ class mainUI(QDialog):
         
         self.camera_timer = QtCore.QTimer()
         self.camera_timer.timeout.connect(self.queryFrame)
-#         self.corp_timer = QtCore.QTimer()
-#         self.corp_timer.timeout.connect(self.cropImg)
-#         self.corp_timer.timeout.connect(self.thres_img)
-        self.camera_timer.timeout.connect(self.cropImg)
-        self.camera_timer.timeout.connect(self.thres_img)
+        self.corp_timer = QtCore.QTimer()
+        self.corp_timer.timeout.connect(self.cropImg)
+        self.corp_timer.timeout.connect(self.thres_img)
         
 
     def initUI(self):
         """ deifine the component of the user interface """
         # Define Size
-#         self.resize(400, 300)
-        self.setGeometry(200,100,500,400)
+        self.setGeometry(50,20,600,500)
         self.setWindowTitle('Load Image')
 
         # Define Buttum
@@ -57,37 +54,51 @@ class mainUI(QDialog):
         self.btnSave = QPushButton('Save', self)
         self.btnRect = QPushButton('Rect', self)
         self.btnCrop = QPushButton('Corp', self)
-
+        self.btnSaveParam = QPushButton('Save Param', self)
+        self.btnLoadParam = QPushButton('Load Param', self)
         self.btnQuit = QPushButton('Quit', self)
 
         # Define Label
-        self.label_regularImg = CutImage(self)
+        self.label_regulerImg_sign = QLabel("Reguler Image : ")
+        self.label_roiImg_sign = QLabel("ROI Image : ")
+        self.label_thresImg_sign = QLabel("Threshold Image : ")
+        self.label_overlapImg_sign = QLabel("Overlap : ")
+        self.label_regularImg = CutImage(self, )
         self.label_processedImg = QLabel("Processed Picture")
-        self.label_thresholdImg = QLabel("threshold Picture")
+        self.label_thresholdImg = QLabel("Threshold Picture")
+        self.label_overlapImg = QLabel("Overlapping Picture")
         self.label_threshold = QLabel("threshold: 0 ",self)
         self.label_thresholdrate = QLabel("佔比率 : 0 ",self)
         
         # Define Slider
-        self.threshold_slider = QSlider(Qt.Horizontal,self)
+        self.threshold_slider = QSlider(Qt.Horizontal,self)  
         self.threshold_slider.setMinimum(0)
         self.threshold_slider.setMaximum(255)
         self.threshold_slider.valueChanged[int].connect(self.changevalue)
 
         # Layout
         layout = QGridLayout(self)
-        layout.addWidget(self.label_regularImg, 0, 1, 1, 3)    # (y,x,yspan,xspan)
-        layout.addWidget(self.label_processedImg, 1, 1, 1, 3)
-        layout.addWidget(self.label_thresholdImg, 0, 4, 1, 2)
-        layout.addWidget(self.label_threshold, 3, 5, 1, 1) 
-        layout.addWidget(self.label_thresholdrate, 2, 5, 1, 1) 
+        layout.addWidget(self.label_regulerImg_sign, 1, 1, 1, 1)
+        layout.addWidget(self.label_regularImg, 2, 1, 2, 3)    # (y,x,yspan,xspan)
+        layout.addWidget(self.label_roiImg_sign, 4, 1, 1, 1)
+        layout.addWidget(self.label_processedImg, 5, 1, 2, 3)
+        layout.addWidget(self.label_thresImg_sign, 1, 4, 1, 1)
+        layout.addWidget(self.label_thresholdImg, 2, 4, 2, 3)
+        layout.addWidget(self.label_overlapImg_sign, 4, 4, 1, 1)
+        layout.addWidget(self.label_overlapImg, 5, 4, 2, 3)
         
-        layout.addWidget(self.btnOpen, 4, 1, 1, 1)
-        layout.addWidget(self.btnSave, 4, 2, 1, 1)
-        layout.addWidget(self.btnRect, 4, 3, 1, 1)
-        layout.addWidget(self.btnCrop, 4, 4, 1, 1)
-        layout.addWidget(self.btnQuit, 4, 5, 1, 1)
+        layout.addWidget(self.label_threshold, 8, 7, 1, 1) 
+        layout.addWidget(self.label_thresholdrate, 7, 7, 1, 1) 
         
-        layout.addWidget(self.threshold_slider, 3, 4,1,1)
+        layout.addWidget(self.btnOpen, 9, 1, 1, 1)
+        layout.addWidget(self.btnSave, 9, 2, 1, 1)
+        layout.addWidget(self.btnRect, 9, 3, 1, 1)
+        layout.addWidget(self.btnCrop, 9, 4, 1, 1)
+        layout.addWidget(self.btnSaveParam, 9, 5, 1, 1)
+        layout.addWidget(self.btnLoadParam, 9, 6, 1, 1)
+        layout.addWidget(self.btnQuit, 9, 7, 1, 1)
+        
+        layout.addWidget(self.threshold_slider, 8, 5,1,2)
 
         # Define the Buttum Function
         self.btnOpen.clicked.connect(self.cameraSlot)
@@ -113,7 +124,7 @@ class mainUI(QDialog):
                                         buttons = QMessageBox.Ok,
                                         defaultButton = QMessageBox.Ok)
         else:
-            self.camera_timer.start(50)
+            self.camera_timer.start(100)
             self.btnOpen.setText('Cam Off')
         
     def closeCamera(self):
@@ -146,12 +157,14 @@ class mainUI(QDialog):
     def rectSlot(self):
         """ Draw Rectangle on image """
         self.label_regularImg.setCursor(Qt.CrossCursor)
+        self.corp_timer.stop()
 
 
     def cropSlot(self):
         
-        self.corp_timer.start(50)
+        self.corp_timer.start(30)
         self.label_regularImg.setCursor(Qt.ArrowCursor)
+        self.label_processedImg.clear()
 
         
     def cropImg(self):
@@ -160,16 +173,7 @@ class mainUI(QDialog):
         self.label_regularImg.setCursor(Qt.ArrowCursor)
         self.img_corp = qtpixmap_to_cvimg(processed_img)
         self.img_processed = cv2.cvtColor(self.img_corp, cv2.COLOR_BGR2GRAY)
-        height, width = self.img_processed.shape
-        bytesPerline = 1 * width
-            
-        # Qimage read image
-        self.qImg_processed = QImage(self.img_processed.data, width, height, bytesPerline, QImage.Format_Grayscale8)
-        
-        # show Qimage
-        self.label_processedImg.setPixmap(QPixmap.fromImage(self.qImg_processed))
-        
-        
+        self.label_processedImg.setPixmap(processed_img)
         
         
     def changevalue(self,threshold):
@@ -270,7 +274,7 @@ class CutImage(QLabel):
         painter.drawRect(rect)
         
         pqscreen  = QGuiApplication.primaryScreen()
-        pixmap2 = pqscreen.grabWindow(self.winId(), min(self.x0, self.x1), min(self.y0, self.y1), abs(self.x1-self.x0), abs(self.y1-self.y0))
+        pixmap2 = pqscreen.grabWindow(self.winId(), min(self.x0, self.x1)+1, min(self.y0, self.y1)+1, abs(self.x1-self.x0)-2, abs(self.y1-self.y0)-2)
         
         global processed_img
         processed_img = pixmap2

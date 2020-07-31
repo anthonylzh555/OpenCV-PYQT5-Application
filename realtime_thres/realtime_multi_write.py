@@ -1,6 +1,8 @@
 import sys
 import cv2
 import numpy as np
+import os
+from configparser import ConfigParser
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QImage, QPixmap, QPainter, QPen, QGuiApplication
 from PyQt5.QtCore import QRect, Qt, QTimer, pyqtSignal, pyqtSlot
@@ -46,7 +48,7 @@ class mainUI(QDialog):
     def initUI(self):
         """ deifine the component of the user interface """
         # Define Size
-        self.setGeometry(50,20,600,500)
+        self.setGeometry(50,50,600,500)
         self.setWindowTitle('Load Image')
 
         # Define Buttum
@@ -63,10 +65,12 @@ class mainUI(QDialog):
         self.label_roiImg_sign = QLabel("ROI Image : ")
         self.label_thresImg_sign = QLabel("Threshold Image : ")
         self.label_overlapImg_sign = QLabel("Overlap : ")
-        self.label_regularImg = CutImage(self, )
-        self.label_processedImg = QLabel("Processed Picture")
-        self.label_thresholdImg = QLabel("Threshold Picture")
-        self.label_overlapImg = QLabel("Overlapping Picture")
+        
+        
+        self.label_regularImg = CutImage(self)
+        self.label_processedImg = QLabel("Processed img")
+        self.label_thresholdImg = QLabel("Threshold img")
+        self.label_overlapImg = QLabel("Overlapping img")
         self.label_threshold = QLabel("threshold: 0 ",self)
         self.label_thresholdrate = QLabel("佔比率 : 0 ",self)
         
@@ -105,6 +109,8 @@ class mainUI(QDialog):
         self.btnSave.clicked.connect(self.saveSlot)
         self.btnRect.clicked.connect(self.rectSlot)
         self.btnCrop.clicked.connect(self.cropSlot) 
+        self.btnSaveParam.clicked.connect(self.saveParamSlot)
+        self.btnLoadParam.clicked.connect(self.loadParamSlot) 
         self.btnQuit.clicked.connect(self.close)
 
         
@@ -130,8 +136,11 @@ class mainUI(QDialog):
     def closeCamera(self):
         
         self.camera_timer.stop()
+        self.corp_timer.stop()
         self.camera.release()
         self.label_regularImg.clear()
+        self.label_processedImg.clear()
+        self.label_thresholdImg.clear()
         self.btnOpen.setText('Cam On')
         
     def queryFrame(self):
@@ -156,9 +165,10 @@ class mainUI(QDialog):
         
     def rectSlot(self):
         """ Draw Rectangle on image """
+        
         self.label_regularImg.setCursor(Qt.CrossCursor)
         self.corp_timer.stop()
-
+        
 
     def cropSlot(self):
         
@@ -170,7 +180,7 @@ class mainUI(QDialog):
     def cropImg(self):
         """ Corp the Image"""
         
-        self.label_regularImg.setCursor(Qt.ArrowCursor)
+#         self.label_regularImg.setCursor(Qt.ArrowCursor)
         self.img_corp = qtpixmap_to_cvimg(processed_img)
         self.img_processed = cv2.cvtColor(self.img_corp, cv2.COLOR_BGR2GRAY)
         self.label_processedImg.setPixmap(processed_img)
@@ -202,6 +212,45 @@ class mainUI(QDialog):
         # Calculate the threshold value
         rate = PixelRate(self.img_threshold,self.threshold_value)
         self.label_thresholdrate.setText("佔比率 :"+str(rate.thresholdRate()))
+        
+    def saveParamSlot(self):
+        config = ConfigParser()
+
+        config['locate'] = {'x0': xywh[0],
+                           'y0': xywh[1],
+                           'w': xywh[2],
+                           'h': xywh[3]}
+
+        config['threshold'] = {'rate': self.threshold_value }
+
+        with open('thres_param.ini', 'w') as configfile:
+            config.write(configfile)
+            
+        msg = QMessageBox.warning(self, u'Warning', u'File save success!',
+                                        buttons = QMessageBox.Ok)
+            
+    def loadParamSlot(self):
+        filepath = "thres_param.ini"
+        config = ConfigParser()
+
+        if os.path.isfile(filepath):
+            msg = QMessageBox.warning(self, u'Warning', u'File exists',
+                                        buttons = QMessageBox.Ok)
+            # 讀取 INI 設定檔
+            config.read('thres_param.ini')
+            x0 = config['locate']['x0']
+            y0 = config['locate']['y0']
+            w = config['locate']['w']
+            h = config['locate']['h']
+            threshold_rate = config['threshold']['rate']
+            print(x0, y0, w, h, threshold_rate)
+            
+        else:
+            msg = QMessageBox.warning(self, u'Warning', u'File does not exist',
+                                        buttons = QMessageBox.Ok)
+            
+#     def loadAndRect(self):
+        
         
 
         
@@ -274,12 +323,12 @@ class CutImage(QLabel):
         painter.drawRect(rect)
         
         pqscreen  = QGuiApplication.primaryScreen()
-        pixmap2 = pqscreen.grabWindow(self.winId(), min(self.x0, self.x1), min(self.y0, self.y1), abs(self.x1-self.x0), abs(self.y1-self.y0))
+        pixmap2 = pqscreen.grabWindow(self.winId(), min(self.x0, self.x1)+1, min(self.y0, self.y1)+1, abs(self.x1-self.x0)-2, abs(self.y1-self.y0)-2)
         
-        global processed_img
+        global processed_img, xywh
         processed_img = pixmap2
-    
-
+        global xywh
+        xywh = [min(self.x0, self.x1), min(self.y0, self.y1), abs(self.x1-self.x0), abs(self.y1-self.y0)]
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
