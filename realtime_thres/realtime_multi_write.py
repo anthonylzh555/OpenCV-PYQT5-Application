@@ -231,19 +231,10 @@ class mainUI(QDialog):
             
     def loadParamSlot(self):
         filepath = "thres_param.ini"
-        config = ConfigParser()
 
         if os.path.isfile(filepath):
             msg = QMessageBox.warning(self, u'Warning', u'File exists',
                                         buttons = QMessageBox.Ok)
-            # 讀取 INI 設定檔
-            config.read('thres_param.ini')
-            x0 = config['locate']['x0']
-            y0 = config['locate']['y0']
-            w = config['locate']['w']
-            h = config['locate']['h']
-            threshold_rate = config['threshold']['rate']
-            print(x0, y0, w, h, threshold_rate)
             
         else:
             msg = QMessageBox.warning(self, u'Warning', u'File does not exist',
