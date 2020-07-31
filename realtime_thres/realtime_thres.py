@@ -38,11 +38,11 @@ class mainUI(QDialog):
         
         self.camera_timer = QtCore.QTimer()
         self.camera_timer.timeout.connect(self.queryFrame)
-#         self.corp_timer = QtCore.QTimer()
-#         self.corp_timer.timeout.connect(self.cropImg)
-#         self.corp_timer.timeout.connect(self.thres_img)
-        self.camera_timer.timeout.connect(self.cropImg)
-        self.camera_timer.timeout.connect(self.thres_img)
+        self.corp_timer = QtCore.QTimer()
+        self.corp_timer.timeout.connect(self.cropImg)
+        self.corp_timer.timeout.connect(self.thres_img)
+#         self.camera_timer.timeout.connect(self.cropImg)
+#         self.camera_timer.timeout.connect(self.thres_img)
         
 
     def initUI(self):
@@ -113,7 +113,7 @@ class mainUI(QDialog):
                                         buttons = QMessageBox.Ok,
                                         defaultButton = QMessageBox.Ok)
         else:
-            self.camera_timer.start(50)
+            self.camera_timer.start(100)
             self.btnOpen.setText('Cam Off')
         
     def closeCamera(self):
@@ -146,12 +146,14 @@ class mainUI(QDialog):
     def rectSlot(self):
         """ Draw Rectangle on image """
         self.label_regularImg.setCursor(Qt.CrossCursor)
+        self.corp_timer.stop()
 
 
     def cropSlot(self):
         
-        self.corp_timer.start(50)
+        self.corp_timer.start(30)
         self.label_regularImg.setCursor(Qt.ArrowCursor)
+        self.label_processedImg.clear()
 
         
     def cropImg(self):
@@ -160,16 +162,7 @@ class mainUI(QDialog):
         self.label_regularImg.setCursor(Qt.ArrowCursor)
         self.img_corp = qtpixmap_to_cvimg(processed_img)
         self.img_processed = cv2.cvtColor(self.img_corp, cv2.COLOR_BGR2GRAY)
-        height, width = self.img_processed.shape
-        bytesPerline = 1 * width
-            
-        # Qimage read image
-        self.qImg_processed = QImage(self.img_processed.data, width, height, bytesPerline, QImage.Format_Grayscale8)
-        
-        # show Qimage
-        self.label_processedImg.setPixmap(QPixmap.fromImage(self.qImg_processed))
-        
-        
+        self.label_processedImg.setPixmap(processed_img)
         
         
     def changevalue(self,threshold):
