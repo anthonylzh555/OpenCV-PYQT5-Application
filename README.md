@@ -1,14 +1,19 @@
 # OpenCV-Threshold-Application
- Just making something with user interface
+ ## Just making something with user interface
+ Static
  - open certain img
- - BGR2GRAY
- - draw an rectangle and cut 
+ - cvtCOLOR_BGR2GRAY
+ - draw a rectangle and cut 
  - save picture
- - set threshold with scroll bar
- - calculate the rate of the threshold
+ - set threshold value with scroll bar
+ - calculate the pixel of the threshold
  
- - open the camera with a buttom
- - apply real time video to do the threshild thing
+ Dynamic
+ - open the camera with buttom
+ - instant threshold 
+ - instant mask
+ - save initial doc
+ - load initial doc
  
 ******
  Requirement 
