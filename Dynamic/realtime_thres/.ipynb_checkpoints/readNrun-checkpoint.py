@@ -21,7 +21,7 @@ def qtpixmap_to_cvimg(qtpixmap):
 
 
 class mainUI(QDialog):
-    """ define the user interface """
+    """ deployment of the user interface """
     
     filepath = "thres_param.ini"
 
@@ -50,7 +50,6 @@ class mainUI(QDialog):
         self.img_corp = np.ndarray(())
         self.img_processed = np.ndarray(())
         self.img_threshold = np.ndarray(())
-        self.img_overlap = np.ndarray(())
         
 
         self.camera = cv2.VideoCapture()
