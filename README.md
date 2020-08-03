@@ -1,4 +1,11 @@
 # OpenCV-Threshold-Application
+******
+ Requirement 
+ - pyqt5 == 5.13.0
+ - opencv-python == 3.4.1
+ - numpy == 1.17.2
+******
+
  ## Just making something with user interface
  Static
  - open certain img
@@ -15,9 +22,4 @@
  - save initial doc
  - load initial doc
  
-******
- Requirement 
- - pyqt5 == 5.13.0
- - opencv-python == 3.4.1
- - numpy == 1.17.2
-******
+
