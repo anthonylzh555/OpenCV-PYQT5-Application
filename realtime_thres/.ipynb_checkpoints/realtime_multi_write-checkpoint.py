@@ -19,7 +19,6 @@ def qtpixmap_to_cvimg(qtpixmap):
     result = result[..., :3]
     return result
 
-
 class mainUI(QDialog):
     """ deployment of the user interface """
     
@@ -32,6 +31,7 @@ class mainUI(QDialog):
         self.img_corp = np.ndarray(())
         self.img_processed = np.ndarray(())
         self.img_threshold = np.ndarray(())
+        self.img_overlap = np.ndarray(())
         
         self.threshold_value = 0
 
@@ -42,7 +42,9 @@ class mainUI(QDialog):
         self.camera_timer.timeout.connect(self.queryFrame)
         self.corp_timer = QtCore.QTimer()
         self.corp_timer.timeout.connect(self.cropImg)
-        self.corp_timer.timeout.connect(self.thres_img)
+        self.corp_timer.timeout.connect(self.thresImg)
+        self.corp_timer.timeout.connect(self.overlapImg)
+        
         
 
     def initUI(self):
@@ -179,11 +181,9 @@ class mainUI(QDialog):
         
     def cropImg(self):
         """ Corp the Image"""
-        
-#         self.label_regularImg.setCursor(Qt.ArrowCursor)
+        self.label_processedImg.setPixmap(processed_img)
         self.img_corp = qtpixmap_to_cvimg(processed_img)
         self.img_processed = cv2.cvtColor(self.img_corp, cv2.COLOR_BGR2GRAY)
-        self.label_processedImg.setPixmap(processed_img)
         
         
     def changevalue(self,threshold):
@@ -196,7 +196,7 @@ class mainUI(QDialog):
         print (self.threshold_value)
         
         
-    def thres_img(self):
+    def thresImg(self):
         """Threshold"""
         ret , self.img_threshold = cv2.threshold(self.img_processed,self.threshold_value,255,cv2.THRESH_BINARY)  
 
@@ -212,6 +212,23 @@ class mainUI(QDialog):
         # Calculate the threshold value
         rate = PixelRate(self.img_threshold,self.threshold_value)
         self.label_thresholdrate.setText("佔比率 :"+str(rate.thresholdRate()))
+        
+    def overlapImg(self):
+        """Overlap Img"""
+        ret , mask = cv2.threshold(self.img_processed,self.threshold_value,255,cv2.THRESH_BINARY)
+        img = cv2.cvtColor(self.img_corp, cv2.COLOR_BGR2RGB)
+        
+        self.img_overlap = cv2.add(img, np.zeros(np.shape(img), dtype=np.uint8), mask=mask)
+
+        height, width, bp = self.img_overlap.shape
+        bytesPerline = 3 * width
+
+        # Qimage read image
+        self.qImg_overlap = QImage(self.img_overlap.data, self.img_overlap.shape[1], self.img_overlap.shape[0],bytesPerline, QImage.Format_RGB888)
+        
+        # show Qimage
+        self.label_overlapImg.setPixmap(QPixmap.fromImage(self.qImg_overlap))
+        
         
     def saveParamSlot(self):
         config = ConfigParser()
@@ -239,6 +256,7 @@ class mainUI(QDialog):
         else:
             msg = QMessageBox.warning(self, u'Warning', u'File does not exist',
                                         buttons = QMessageBox.Ok)
+            
             
 class PixelRate():
     """Count the threshold rate"""

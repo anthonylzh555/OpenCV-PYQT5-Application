@@ -51,7 +51,6 @@ class mainUI(QDialog):
         self.img_processed = np.ndarray(())
         self.img_threshold = np.ndarray(())
         self.img_overlap = np.ndarray(())
-        
 
         self.camera = cv2.VideoCapture()
         self.CAM_NUM = 0  # Set Camera num
@@ -59,7 +58,8 @@ class mainUI(QDialog):
         self.camera_timer = QtCore.QTimer()
         self.camera_timer.timeout.connect(self.queryFrame)
         self.camera_timer.timeout.connect(self.cropImg)
-        self.camera_timer.timeout.connect(self.thres_img)
+        self.camera_timer.timeout.connect(self.thresImg)
+        self.camera_timer.timeout.connect(self.overlapImg)
         
         
         flag = self.camera.open(self.CAM_NUM)
@@ -126,7 +126,7 @@ class mainUI(QDialog):
         self.label_processedImg.setPixmap(processed_img)
         
         
-    def thres_img(self):
+    def thresImg(self):
         """Threshold"""
         ret , self.img_threshold = cv2.threshold(self.img_processed,threshold_rate,255,cv2.THRESH_BINARY)  
         height, width = self.img_threshold.shape
@@ -141,6 +141,24 @@ class mainUI(QDialog):
         # Calculate the threshold value
         rate = PixelRate(self.img_threshold,threshold_rate)
         self.label_thresholdrate.setText("佔比率 :"+str(rate.thresholdRate()))     
+        
+        
+    def overlapImg(self):
+        """Overlap Img"""
+        ret , mask = cv2.threshold(self.img_processed,threshold_rate,255,cv2.THRESH_BINARY)
+        img = cv2.cvtColor(self.img_corp, cv2.COLOR_BGR2RGB)
+        
+        self.img_overlap = cv2.add(img, np.zeros(np.shape(img), dtype=np.uint8), mask=mask)
+
+        height, width, bp = self.img_overlap.shape
+        bytesPerline = 3 * width
+
+        # Qimage read image
+        self.qImg_overlap = QImage(self.img_overlap.data, self.img_overlap.shape[1], self.img_overlap.shape[0],bytesPerline, QImage.Format_RGB888)
+        
+        # show Qimage
+        self.label_overlapImg.setPixmap(QPixmap.fromImage(self.qImg_overlap))
+        
 
         
 class PixelRate():
