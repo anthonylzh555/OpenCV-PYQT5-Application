@@ -1,5 +1,10 @@
 # OpenCV-Threshold-Application
- ## Just making something with user interface
+## Just making something with user interface
+ Requirement 
+ - pyqt5 == 5.13.0
+ - opencv-python == 3.4.1
+ - numpy == 1.17.2
+******
  Static
  - open certain img
  - cvtCOLOR_BGR2GRAY
@@ -15,9 +20,4 @@
  - save initial doc
  - load initial doc
  
-******
- Requirement 
- - pyqt5 == 5.13.0
- - opencv-python == 3.4.1
- - numpy == 1.17.2
-******
+
