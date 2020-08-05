@@ -70,7 +70,6 @@ class mainUI(QDialog):
                                         defaultButton = QMessageBox.Ok)
         else:
             self.camera_timer.start(50)
-            self.label_threshold.setText('threshold:'+str(threshold_rate))
         
         
 
@@ -83,32 +82,22 @@ class mainUI(QDialog):
 
         # Define Label
         self.label_regulerImg_sign = QLabel("Reguler Image : ")
-        self.label_roiImg_sign = QLabel("ROI Image : ")
-        self.label_thresImg_sign = QLabel("Threshold Image : ")
         self.label_overlapImg_sign = QLabel("Overlap : ")
         
         
         self.label_regularImg = CutImage(self)
-        self.label_processedImg = QLabel("Processed img")
-        self.label_thresholdImg = QLabel("Threshold img")
         self.label_overlapImg = QLabel("Overlapping img")
-        self.label_threshold = QLabel("threshold: 0 ",self)
         self.label_thresholdrate = QLabel("佔比率 : 0 ",self)
         
 
         # Layout
         layout = QGridLayout(self)
         layout.addWidget(self.label_regulerImg_sign, 1, 1, 1, 1)
-        layout.addWidget(self.label_regularImg, 2, 1, 2, 3)    # (y,x,yspan,xspan)
-        layout.addWidget(self.label_roiImg_sign, 4, 1, 1, 1)
-        layout.addWidget(self.label_processedImg, 5, 1, 2, 3)
-        layout.addWidget(self.label_thresImg_sign, 1, 4, 1, 1)
-        layout.addWidget(self.label_thresholdImg, 2, 4, 2, 3)
-        layout.addWidget(self.label_overlapImg_sign, 4, 4, 1, 1)
-        layout.addWidget(self.label_overlapImg, 5, 4, 2, 3)
+        layout.addWidget(self.label_regularImg, 2, 1, 2, 2)    # (y,x,yspan,xspan)
+        layout.addWidget(self.label_overlapImg_sign, 1, 3, 1, 1)
+        layout.addWidget(self.label_overlapImg, 3, 3, 2, 2)
         
-        layout.addWidget(self.label_threshold, 7, 5, 1, 1) 
-        layout.addWidget(self.label_thresholdrate, 7, 6, 1, 1) 
+        layout.addWidget(self.label_thresholdrate, 4, 4, 1, 1) 
         
         
     def queryFrame(self):
@@ -128,7 +117,6 @@ class mainUI(QDialog):
         """ Corp the Image"""
         self.img_corp = qtpixmap_to_cvimg(processed_img)
         self.img_processed = cv2.cvtColor(self.img_corp, cv2.COLOR_BGR2GRAY)
-        self.label_processedImg.setPixmap(processed_img)
         
         
     def thresImg(self):
@@ -139,9 +127,6 @@ class mainUI(QDialog):
             
         # Qimage read image
         self.qImg_threshold = QImage(self.img_threshold.data, width, height, bytesPerline, QImage.Format_Grayscale8)
-        
-        # show Qimage
-        self.label_thresholdImg.setPixmap(QPixmap.fromImage(self.qImg_threshold))
         
         # Calculate the threshold value
         rate = PixelRate(self.img_threshold)
@@ -161,7 +146,8 @@ class mainUI(QDialog):
 
         img = cv2.cvtColor(self.img_corp, cv2.COLOR_BGR2RGB)
         
-        self.img_overlap = cv2.addWeighted(img, 0.8, mask_rgb, 0.2, 0)
+        self.img_overlap = cv2.addWeighted(img, 0.8, mask_rgb, 0.2, 0, (x0,y0))
+#         self.img_overlap = cv2.addWeighted(self.img_regular, 0.8, mask_rgb, 0.2, 0, (x0,y0))
 
         height, width, bp = self.img_overlap.shape
         bytesPerline = 3 * width

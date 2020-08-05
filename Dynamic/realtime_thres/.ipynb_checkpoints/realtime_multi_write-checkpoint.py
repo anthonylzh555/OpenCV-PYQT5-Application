@@ -226,22 +226,12 @@ class mainUI(QDialog):
         height, width, depth = mask_rgb.shape
         for i in range(height):
             for j in range(width):
-#                 print(mask[i,j])
                 if mask[i, j] == 255:
                     mask_rgb[i, j] = (255,0,0)
 
         img = cv2.cvtColor(self.img_corp, cv2.COLOR_BGR2RGB)
         
-#         print(type(mask), mask.shape)
-#         print(type(img), img.shape)
-        
-        ###########
-        self.img_overlap = cv2.addWeighted(img, 0.9, mask_rgb, 0.1, 0)
-#         self.img_overlap = cv2.add(img, mask)
-        ###########
-        
-        
-#         self.img_overlap = cv2.add(img, np.zeros(np.shape(img), dtype=np.uint8), mask=mask)
+        self.img_overlap = cv2.addWeighted(img, 0.8, mask_rgb, 0.2, 0)
 
         height, width, bp = self.img_overlap.shape
         bytesPerline = 3 * width
