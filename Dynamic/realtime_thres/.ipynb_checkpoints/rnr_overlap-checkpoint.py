@@ -114,7 +114,12 @@ class mainUI(QDialog):
     def queryFrame(self):
         """When Qtimer time out, refresh regular_img """
         ret, self.frame = self.camera.read()
-        show = cv2.resize(self.frame,(480,360))
+        scale_percent = 60       # percent of original size
+        width = int(self.frame.shape[1] * scale_percent / 100)
+        height = int(self.frame.shape[0] * scale_percent / 100)
+        dim = (width, height)
+        show = cv2.resize(self.frame,dim)
+#         show = cv2.resize(self.frame,(480,360))
         show = cv2.cvtColor(show, cv2.COLOR_BGR2RGB)
         QImg = QImage(show.data, show.shape[1],show.shape[0],QImage.Format_RGB888)
         self.label_regularImg.setPixmap(QPixmap.fromImage(QImg))

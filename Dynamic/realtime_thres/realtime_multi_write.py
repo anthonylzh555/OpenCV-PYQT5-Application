@@ -148,7 +148,12 @@ class mainUI(QDialog):
     def queryFrame(self):
         """When Qtimer time out, refresh regular_img """
         ret, self.frame = self.camera.read()
-        show = cv2.resize(self.frame,(480,360))
+        scale_percent = 60       # percent of original size
+        width = int(self.frame.shape[1] * scale_percent / 100)
+        height = int(self.frame.shape[0] * scale_percent / 100)
+        dim = (width, height)
+        show = cv2.resize(self.frame,dim)
+#         show = cv2.resize(self.frame,(480,360))
         show = cv2.cvtColor(show, cv2.COLOR_BGR2RGB)
         QImg = QImage(show.data, show.shape[1],show.shape[0],QImage.Format_RGB888)
         self.label_regularImg.setPixmap(QPixmap.fromImage(QImg))
@@ -191,7 +196,7 @@ class mainUI(QDialog):
         sender = self.sender()
         if sender == self.threshold_slider:
             self.threshold_slider.setValue(threshold)
-        self.label_threshold.setText('threshold:'+str(threshold))
+        self.label_threshold.setText('模型敏感度:'+str(threshold))
         self.threshold_value = threshold
         print (self.threshold_value)
         
@@ -210,15 +215,23 @@ class mainUI(QDialog):
         self.label_thresholdImg.setPixmap(QPixmap.fromImage(self.qImg_threshold))
         
         # Calculate the threshold value
-        rate = PixelRate(self.img_threshold,self.threshold_value)
-        self.label_thresholdrate.setText("佔比率 :"+str(rate.thresholdRate()))
+        rate = PixelRate(self.img_threshold)
+        self.label_thresholdrate.setText("佔比率 :"+str(rate.thresholdRate())+"%")
         
     def overlapImg(self):
         """Overlap Img"""
-        ret , mask = cv2.threshold(self.img_processed,self.threshold_value,255,cv2.THRESH_BINARY)
+        mask = self.img_threshold
+        mask_rgb = cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB) 
+        
+        height, width, depth = mask_rgb.shape
+        for i in range(height):
+            for j in range(width):
+                if mask[i, j] == 255:
+                    mask_rgb[i, j] = (255,0,0)
+
         img = cv2.cvtColor(self.img_corp, cv2.COLOR_BGR2RGB)
         
-        self.img_overlap = cv2.add(img, np.zeros(np.shape(img), dtype=np.uint8), mask=mask)
+        self.img_overlap = cv2.addWeighted(img, 0.8, mask_rgb, 0.2, 0)
 
         height, width, bp = self.img_overlap.shape
         bytesPerline = 3 * width
@@ -261,13 +274,8 @@ class mainUI(QDialog):
 class PixelRate():
     """Count the threshold rate"""
     
-    def __init__(self, img_path, threshhold):
-        self.img_path = img_path
-        self.threshhold = threshhold
-        
-#         regular_img = cv2.imread(self.img_path,0)
-        regular_img = self.img_path
-        ret , self.thresh_img = cv2.threshold(regular_img,self.threshhold,255,cv2.THRESH_BINARY)
+    def __init__(self, img):
+        self.thresh_img = img
     
     def thresholdPixel(self):
         """Count the pixel which is above the threshold"""
@@ -290,7 +298,6 @@ class PixelRate():
         Rate = (self.thresholdPixel()/self.totalPixel())*100
         Rate = np.round(Rate,2)
         return Rate
-        
         
 class CutImage(QLabel):
     """ define a class of Label to draw rectangle """
@@ -327,7 +334,10 @@ class CutImage(QLabel):
         painter.drawRect(rect)
         
         pqscreen  = QGuiApplication.primaryScreen()
-        pixmap2 = pqscreen.grabWindow(self.winId(), min(self.x0, self.x1)+1, min(self.y0, self.y1)+1, abs(self.x1-self.x0)-2, abs(self.y1-self.y0)-2)
+        pixmap2 = pqscreen.grabWindow(self.winId(), min(self.x0, self.x1)+1,
+                                                    min(self.y0, self.y1)+1,
+                                                    abs(self.x1-self.x0)-2,
+                                                    abs(self.y1-self.y0)-2)
         
         global processed_img, xywh
         processed_img = pixmap2
