@@ -182,7 +182,7 @@ class PixelRate():
     def thresholdRate(self):
         """Calculate the Rate of the threshold"""
         Rate = (self.thresholdPixel()/self.totalPixel())*100
-        Rate = np.round(Rate,2)
+        Rate = np.round(Rate,1)
         return Rate
         
         
