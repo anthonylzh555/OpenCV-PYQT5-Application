@@ -53,7 +53,7 @@ class mainUI(QDialog):
         self.img_overlap = np.ndarray(())
 
         self.camera = cv2.VideoCapture()
-        self.CAM_NUM = 0  # Set Camera num
+        self.CAM_NUM = 0  
         
         self.camera_timer = QtCore.QTimer()
         self.camera_timer.timeout.connect(self.queryFrame)
@@ -71,7 +71,6 @@ class mainUI(QDialog):
         else:
             self.camera_timer.start(50)
         
-        
 
     def initUI(self):
         """ deifine the component of the user interface """
@@ -86,32 +85,34 @@ class mainUI(QDialog):
         
         
         self.label_regularImg = CutImage(self)
-        self.label_overlapImg = QLabel("Overlapping img")
+        self.label_overlapImg = drawRect("Overlapping img")
         self.label_thresholdrate = QLabel("佔比率 : 0 ",self)
         
 
         # Layout
         layout = QGridLayout(self)
         layout.addWidget(self.label_regulerImg_sign, 1, 1, 1, 1)
-        layout.addWidget(self.label_regularImg, 2, 1, 2, 2)    # (y,x,yspan,xspan)
+        layout.addWidget(self.label_regularImg, 2, 1, 1, 1)    # (y,x,yspan,xspan)
         layout.addWidget(self.label_overlapImg_sign, 1, 3, 1, 1)
-        layout.addWidget(self.label_overlapImg, 3, 3, 2, 2)
+        layout.addWidget(self.label_overlapImg, 2, 3, 1, 1)
         
         layout.addWidget(self.label_thresholdrate, 4, 4, 1, 1) 
         
         
     def queryFrame(self):
         """When Qtimer time out, refresh regular_img """
-        ret, self.frame = self.camera.read()
-        scale_percent = 60       # percent of original size
-        width = int(self.frame.shape[1] * scale_percent / 100)
-        height = int(self.frame.shape[0] * scale_percent / 100)
+        ret, frame= self.camera.read()
+        scale_percent = 80       # percent of original size
+        width = int(frame.shape[1] * scale_percent / 100)
+        height = int(frame.shape[0] * scale_percent / 100)
         dim = (width, height)
-        show = cv2.resize(self.frame,dim)
-#         show = cv2.resize(self.frame,(480,360))
+        show = cv2.resize(frame,dim)
         show = cv2.cvtColor(show, cv2.COLOR_BGR2RGB)
-        QImg = QImage(show.data, show.shape[1],show.shape[0],QImage.Format_RGB888)
+        self.img_regular = show
+        
+        QImg = QImage(self.img_regular.data,  self.img_regular.shape[1], self.img_regular.shape[0],QImage.Format_RGB888)
         self.label_regularImg.setPixmap(QPixmap.fromImage(QImg))
+#         self.label_overlapImg.setPixmap(QPixmap.fromImage(QImg))
         
     def cropImg(self):
         """ Corp the Image"""
@@ -124,17 +125,14 @@ class mainUI(QDialog):
         ret , self.img_threshold = cv2.threshold(self.img_processed,threshold_rate,255,cv2.THRESH_BINARY)  
         height, width = self.img_threshold.shape
         bytesPerline = 1 * width
-            
-        # Qimage read image
-        self.qImg_threshold = QImage(self.img_threshold.data, width, height, bytesPerline, QImage.Format_Grayscale8)
         
         # Calculate the threshold value
         rate = PixelRate(self.img_threshold)
         self.label_thresholdrate.setText("佔比率 :"+str(rate.thresholdRate()))     
         
-        
+
     def overlapImg(self):
-        """Overlap Img"""
+        """Overlap Img2"""
         mask = self.img_threshold
         mask_rgb = cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB) 
         
@@ -144,21 +142,20 @@ class mainUI(QDialog):
                 if mask[i, j] == 255:
                     mask_rgb[i, j] = (255,0,0)
 
-        img = cv2.cvtColor(self.img_corp, cv2.COLOR_BGR2RGB)
+        img = self.img_regular
         
-        self.img_overlap = cv2.addWeighted(img, 0.8, mask_rgb, 0.2, 0, (x0,y0))
-#         self.img_overlap = cv2.addWeighted(self.img_regular, 0.8, mask_rgb, 0.2, 0, (x0,y0))
+        blank_image = np.zeros((img.shape[0],img.shape[1],3), np.uint8)
+        blank_image[y0+1:y0+h-1, x0+1:x0+w-1] = mask_rgb
 
+        self.img_overlap = cv2.addWeighted(img, 0.8, blank_image, 0.2, 0)      
+        
         height, width, bp = self.img_overlap.shape
         bytesPerline = 3 * width
 
-        # Qimage read image
+        # Qimage to QLabel
         self.qImg_overlap = QImage(self.img_overlap.data, self.img_overlap.shape[1], self.img_overlap.shape[0],bytesPerline, QImage.Format_RGB888)
-        
-        # show Qimage
         self.label_overlapImg.setPixmap(QPixmap.fromImage(self.qImg_overlap))
         
-
         
 class PixelRate():
     """Count the threshold rate"""
@@ -196,15 +193,22 @@ class CutImage(QLabel):
         super().paintEvent(event)
         rect =QRect(x0, y0, w, h)
         
-        painter = QPainter(self)
-        painter.setPen(QPen(Qt.red,2,Qt.SolidLine))
-        painter.drawRect(rect)
-        
         pqscreen  = QGuiApplication.primaryScreen()
         pixmap2 = pqscreen.grabWindow(self.winId(), x0+1, y0+1, w-2, h-2)
         
         global processed_img
         processed_img = pixmap2
+        
+class drawRect(QLabel):
+    """ define a class of Label to draw rectangle """
+            
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        rect =QRect(x0, y0, w, h)
+        
+        painter = QPainter(self)
+        painter.setPen(QPen(Qt.red,2,Qt.SolidLine))
+        painter.drawRect(rect)
 
 
 if __name__ == '__main__':

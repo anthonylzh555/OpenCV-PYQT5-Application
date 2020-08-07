@@ -148,7 +148,7 @@ class mainUI(QDialog):
     def queryFrame(self):
         """When Qtimer time out, refresh regular_img """
         ret, self.frame = self.camera.read()
-        scale_percent = 60       # percent of original size
+        scale_percent = 80       # percent of original size
         width = int(self.frame.shape[1] * scale_percent / 100)
         height = int(self.frame.shape[0] * scale_percent / 100)
         dim = (width, height)
@@ -342,7 +342,7 @@ class CutImage(QLabel):
         global processed_img, xywh
         processed_img = pixmap2
         global xywh
-        xywh = [min(self.x0, self.x1), min(self.y0, self.y1), abs(self.x1-self.x0), abs(self.y1-self.y0)]
+        xywh = [min(self.x0, self.x1)+1, min(self.y0, self.y1)+1, abs(self.x1-self.x0)-2, abs(self.y1-self.y0)-2]
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
